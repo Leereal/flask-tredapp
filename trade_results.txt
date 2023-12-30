@@ -1,0 +1,9 @@
+
+EURUSD Won Profit is now $0.89 and loss $0 => Total Profit = $0.89
+EURUSD Won Profit is now $0.89 and loss $0 => Total Profit = $0.89
+EURUSD Won Profit is now $0.89 and loss $0 => Total Profit = $1.78
+EURUSD-OTC Won Profit is now $0 and loss -$1.0  => Total Profit = $-1.0
+EURUSD-OTC Won Profit is now $0 and loss -$1.0  => Total Profit = $-1.0
+EURUSD-OTC Won Profit is now $0.89 and loss $0 => Total Profit = $0.89
+EURUSD-OTC Won Profit is now $0.89 and loss $0 => Total Profit = $0.89
+EURUSD-OTC Won Profit is now $0 and loss -$1.0  => Total Profit = $-1.0
