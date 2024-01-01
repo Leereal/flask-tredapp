@@ -1,0 +1,21 @@
+pip install git+https://github.com/Lu-Yi-Hsun/iqoptionapi.git --upgrade
+
+Learn this:
+
+Running a large number of these functions concurrently (e.g., 2000 at the same time) can be challenging and depends on various factors such as system resources, the nature of the tasks, and the design of your application. In a Flask application, each incoming request typically triggers a separate thread or process to handle the request. However, running a very high number of concurrent tasks can lead to issues like resource exhaustion, increased response times, or even crashes.
+
+Here are a few considerations and suggestions:
+
+Concurrency Model: Flask itself is not designed for handling a massive number of concurrent requests. You might want to explore asynchronous programming using a library like asyncio along with an asynchronous web framework like FastAPI instead of Flask. Asynchronous programming can improve the efficiency of handling many concurrent tasks.
+
+Task Queue: For handling a large number of background tasks, you might consider using a task queue system like Celery. Celery allows you to offload time-consuming tasks to background workers, freeing up your Flask application to handle incoming requests more efficiently.
+
+Throttling and Rate Limiting: To prevent resource exhaustion, consider implementing throttling or rate limiting. This ensures that your system doesn't get overwhelmed by too many requests at once.
+
+Scaling: If your application needs to handle a significant load, you might need to scale horizontally by deploying multiple instances of your application (possibly on multiple servers) and using a load balancer to distribute incoming requests.
+
+Resource Monitoring: Keep an eye on system resources (CPU, memory, etc.) while running a high number of concurrent tasks. Ensure that your server infrastructure can handle the load.
+
+Optimization: Profile your code to identify any bottlenecks or areas for optimization. Optimize critical sections to make your code more efficient.
+
+Remember that handling a large number of concurrent tasks involves both software and hardware considerations. It's essential to perform thorough testing under realistic conditions to ensure the stability and performance of your application.

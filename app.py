@@ -6,7 +6,7 @@ from socket_manager import init_socket, socket
 from bson import ObjectId
 from threading import Thread
 from iqoptionapi.stable_api import IQ_Option
-
+from decouple import config
 
 app = Flask(__name__)   # Flask constructor 
 app.config['SECRET_KEY'] = 'secret!'
@@ -16,10 +16,8 @@ init_socket(app)
 running_traders = [] 
 
 def create_and_run_trader(email,token,risk_management):
-    try:
-        api_instance = None
-        api_instance = IQ_Option(email, token)        
-        trader = Trader(email, token,risk_management,api_instance)
+    try:  
+        trader = Trader(email, token,risk_management)        
         running_traders.append(trader)
     except Exception as e:
         print(f"Error creating and running trader: {e}")
@@ -85,7 +83,6 @@ def handle_start_bot(data):
                 "$set":{'active':False}
             }
         ) 
-
         #Tell the client that bot stopped
         socket.emit('bot',{
             "action":'bot_started',
@@ -95,25 +92,24 @@ def handle_start_bot(data):
         print("Not allowed")
 
 @socket.on('signal')
-def handle_signal(data):
-    threads = []
+def handle_signal(data):   
+
     for trader in running_traders:
-        thread = Thread(target=trader.trade, args=(
-            data['symbol'],
-            data['action'],
-            data['option']
-        ))
-        threads.append(thread)
-        thread.start()
+        if 'price' in data and data['price']:                
+            trader.pending_order(data)
+        else:
+            trader.trade(data['symbol'],data['action'],data['option'])      
 
-    for thread in threads:
-        thread.join()       
-
+@socket.on('delete_pending_order')
+def handle_delete_pending_order(data):    
+    for trader in running_traders:
+        trader.delete_pending_order(ObjectId(data['id']))
+    
 def populate_connection(connection):
     connection['connector'] = db.users.find_one({'_id': connection['connector']}, {'_id': 1, 'firstName': 1, 'lastName': 1})
     connection['category'] = db.categories.find_one({'_id': connection['category']}, {'_id': 1, 'name': 1})
     connection['account'] = db.accounts.find_one({'_id': connection['account']}, {'_id': 1, 'account_name': 1, 'balance': 1, 'email':1, 'token':1})
-    connection['robot'] = db.robots.find_one({'_id': connection['robot']}, {'_id': 1, 'name': 1, 'version': 1})
+    connection['robot'] = db.robots.find_one({'_id': connection['robot']}, {'_id': 1, 'name': 1, 'version': 1, 'symbols':1})
     
     return connection
 
