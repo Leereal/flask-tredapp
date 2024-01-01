@@ -7,6 +7,8 @@ from bson import ObjectId
 from threading import Thread
 from iqoptionapi.stable_api import IQ_Option
 from decouple import config
+import asyncio
+
 
 app = Flask(__name__)   # Flask constructor 
 app.config['SECRET_KEY'] = 'secret!'
@@ -63,6 +65,11 @@ def handle_start_bot(data):
 
             for thread in threads:
                     thread.join()
+            # Run bots that are fully automated after all accounts activated
+            if data['auto'] == True:
+                for trader in running_traders:
+                    trader.run_automated_bot()                  
+            
         except Exception as e:
             print(f"Error retrieving documents from MongoDB: {e}")
     elif id and not activate:

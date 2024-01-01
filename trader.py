@@ -7,8 +7,7 @@ import bson.json_util as json_util
 from decouple import config
 import numpy
 from datetime import datetime
-
-
+from talib.abstract import *
 class Trader:
     def __init__(self, email, password,risk_management, account_type="PRACTICE"):
         self.email = email
@@ -400,6 +399,18 @@ class Trader:
             data['volume'] = numpy.append(data['open'], candles[x]['volume'])
         return data
     
+    def getClosePrices(self, symbol):
+        """Get live close prices array only. Returns array of close prices"""
+
+        candles = self.API.get_realtime_candles(symbol, int(config("TIMEFRAME")))
+
+        data = []
+        for x in list(candles):
+            data.append(candles[x]['close'])
+
+        close = numpy.array(data)
+        return close
+    
     def pending_order(self,data): 
         """"We send parameter and start to loop waiting for our pending orders positions to meet
         and then execue the trade then exit the loop. That's how we are setting the pending orders."""   
@@ -460,6 +471,47 @@ class Trader:
 
             prev_price = curr_price 
     
+    def process_symbol(self,symbol):
+        """Place a trade based on RSI rules"""      
+                
+        maxdict = 280
+        print(
+            f"|+|====================RSI Strategy started on {symbol}==================|+|")
 
-    
+        self.API.start_candles_stream(symbol, int(config("TIMEFRAME")), maxdict)
+        prev_rsi = 0
+        while True:
+
+            try:
+                rsi_values = RSI(self.getClosePrices(symbol), timeperiod=14)
+                last_rsi_value = rsi_values[-1]  # Get the last RSI value  # Get the last RSI value
+
+            except KeyError:
+                pass
+
+            else:
+                if prev_rsi != round(last_rsi_value, 2): 
+                    print(f"SYMBOL : {symbol} | RSI :  {round(last_rsi_value, 2)}")
+
+                # RSI Check
+                if last_rsi_value >= float(config("OVERBOUGHT")):
+                    self.trade(symbol, "put", config("OPTION"))
+
+                elif last_rsi_value <= float(config("OVERSOLD")):
+                    self.trade(symbol, "call", config("OPTION"))
+
+                prev_rsi = round(last_rsi_value, 2)
+                            
+    def run_automated_bot(self):
+        symbols = [asset['name'] for asset in self.robot_connection["robot"]["symbols"] if asset['active']]
+        for symbol in symbols:
+            self.process_symbol(symbol) 
+
         
+
+                            
+
+        
+
+        
+            
