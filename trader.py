@@ -418,6 +418,10 @@ class Trader:
         candles = self.API.get_realtime_candles(data['symbol'], timeframe)
         prev_price = 0
 
+        socket.emit('pending_order_success',{
+            '_id':data['symbol']
+        })
+
         while self.pending_orders[id]['active']:
             try:
                 candle = self.getData(candles)

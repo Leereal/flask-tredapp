@@ -93,12 +93,22 @@ def handle_start_bot(data):
 
 @socket.on('signal')
 def handle_signal(data):   
-
     for trader in running_traders:
         if 'price' in data and data['price']:                
             trader.pending_order(data)
         else:
-            trader.trade(data['symbol'],data['action'],data['option'])      
+            trader.trade(data['symbol'],data['action'],data['option'])
+
+    if not len(running_traders):        
+        db.robots.update_many({}, 
+            {
+                "$set": 
+                { 
+                    "active": False
+                } 
+            },
+        )   
+        socket.emit('no_bot_running',{}) 
 
 @socket.on('delete_pending_order')
 def handle_delete_pending_order(data):    
