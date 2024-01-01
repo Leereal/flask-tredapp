@@ -66,3 +66,9 @@ EURUSD-OTC Won Profit is now $0 and loss -$6392.21  => Total Profit = $-6392.21
 EURUSD-OTC Won Profit is now $0 and loss -$140.8  => Total Profit = $-140.8
 EURGBP-OTC Won Profit is now $399.03 and loss $0 => Total Profit = $399.03
 EURUSD-OTC Won Profit is now $125.6 and loss $0 => Total Profit = $524.63
+EURGBP-OTC Won Profit is now $130.43 and loss $0 => Total Profit = $130.43
+EURGBP-OTC Won Profit is now $128.37 and loss $0 => Total Profit = $128.37
+EURUSD-OTC Won Profit is now $0 and loss -$145.76  => Total Profit = $-145.76
+EURGBP-OTC Won Profit is now $130.02 and loss $0 => Total Profit = $130.02
+EURGBP-OTC Won Profit is now $130.03 and loss $0 => Total Profit = $260.05
+EURUSD-OTC Won Profit is now $0 and loss -$154.87  => Total Profit = $-154.87

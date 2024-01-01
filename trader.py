@@ -151,6 +151,10 @@ class Trader:
 
             # Entry Fail notification
             def failedEntryNotification():
+                socket.emit('bot',{
+                     'action':'trade_fail',
+                     "data":json_util.dumps(self.robot_connection)                   
+                })
                 print(
                     f"{symbol} Failed to execute maybe your balance low or asset is closed")
                 balance = self.API.get_balance()
