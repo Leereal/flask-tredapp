@@ -1,5 +1,8 @@
 pip install git+https://github.com/Lu-Yi-Hsun/iqoptionapi.git --upgrade
 
+Download and install TALib you can google the version suitable for your python version. 
+if you are using version 12 you can  use the one in this folder
+
 Learn this:
 
 Running a large number of these functions concurrently (e.g., 2000 at the same time) can be challenging and depends on various factors such as system resources, the nature of the tasks, and the design of your application. In a Flask application, each incoming request typically triggers a separate thread or process to handle the request. However, running a very high number of concurrent tasks can lead to issues like resource exhaustion, increased response times, or even crashes.

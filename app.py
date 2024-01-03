@@ -17,9 +17,9 @@ init_socket(app)
 
 running_traders = [] 
 
-def create_and_run_trader(email,token,risk_management):
+def create_and_run_trader(email,token,risk_management, account_type):
     try:  
-        trader = Trader(email, token,risk_management)        
+        trader = Trader(email, token,risk_management,account_type)        
         running_traders.append(trader)
     except Exception as e:
         print(f"Error creating and running trader: {e}")
@@ -58,7 +58,8 @@ def handle_start_bot(data):
                 thread = Thread(target=create_and_run_trader, args=(
                     document['account']['email'],
                     document['account']['token'],
-                    risk_management
+                    risk_management,
+                    document['account']['account_type']
                 ))
                 threads.append(thread)
                 thread.start()                
@@ -68,7 +69,11 @@ def handle_start_bot(data):
             # Run bots that are fully automated after all accounts activated
             if data['auto'] == True:
                 for trader in running_traders:
-                    trader.run_automated_bot()                  
+                    symbols = trader.robot_connection['robot']['symbols']
+                    for symbol in symbols:
+                        if symbol['active']:
+                            trader.run_automated_bot(symbol)
+                                       
             
         except Exception as e:
             print(f"Error retrieving documents from MongoDB: {e}")
@@ -125,7 +130,7 @@ def handle_delete_pending_order(data):
 def populate_connection(connection):
     connection['connector'] = db.users.find_one({'_id': connection['connector']}, {'_id': 1, 'firstName': 1, 'lastName': 1})
     connection['category'] = db.categories.find_one({'_id': connection['category']}, {'_id': 1, 'name': 1})
-    connection['account'] = db.accounts.find_one({'_id': connection['account']}, {'_id': 1, 'account_name': 1, 'balance': 1, 'email':1, 'token':1})
+    connection['account'] = db.accounts.find_one({'_id': connection['account']}, {'_id': 1, 'account_name': 1, 'balance': 1, 'email':1, 'token':1, 'account_type':1})
     connection['robot'] = db.robots.find_one({'_id': connection['robot']}, {'_id': 1, 'name': 1, 'version': 1, 'symbols':1})
     
     return connection

@@ -124,6 +124,10 @@ class Trader:
         """Execute Trade for digital""" 
         start_time = time.time()  # Execution starting time
 
+        #New SA accounts digital is not allowed for Monday to Friday
+        if self.robot_connection['account']['account_type'] == 'REAL':
+            option = 'binary'
+
         # Local Variables to use
         open_positions = self.openPositions()
         stake = self.calculateStake()
@@ -374,17 +378,18 @@ class Trader:
                     print(f"Error in notify_entry_open: {e}")
     
     def delete_pending_order(self, id):
+        db.pending_orders.update_one(
+            {
+                '_id':ObjectId(id)
+            },
+            { 
+                "$set":{'active':False}
+            }
+        )
+        socket.emit("pending_order_deleted",{})
         if id in self.pending_orders:
             self.pending_orders[id]['active'] = False
-            db.pending_orders.update_one(
-                {
-                    '_id':ObjectId(id)
-                },
-                { 
-                    "$set":{'active':False}
-                }
-            )
-            socket.emit("pending_order_deleted",{})
+            
         
 
     def getData(self,candles):
@@ -431,12 +436,13 @@ class Trader:
 
         self.API.start_candles_stream(data['symbol'],timeframe,maxdict)  
         candles = self.API.get_realtime_candles(data['symbol'], timeframe)
-        prev_price = 0
+        
 
         socket.emit('pending_order_success',{
             '_id':data['symbol']
         })
-
+        prev_price = 0
+        entry_price = float(data["price"])
         while self.pending_orders[id]['active']:
             try:
                 candle = self.getData(candles)
@@ -450,62 +456,67 @@ class Trader:
         
                 if curr_price != prev_price and prev_price != 0: # check if the price changed
                     if data['action'] == 'buy_stop' and prev_price != 0: #deal with pending buy stop
-                        if prev_price <= data["price"] and curr_price >= data["price"]:
+                        if prev_price <= entry_price and curr_price >= entry_price:
                             self.trade(data['symbol'], "call", data['option'])
                             break
                     
                     elif data['action'] == 'buy_limit' and prev_price != 0: #deal with pending buy limit
-                        if prev_price >= data["price"] and curr_price <= data["price"]:
+                        if prev_price >= entry_price and curr_price <= entry_price:
                             self.trade(data['symbol'], "call", data['option'])
                             break
                     
                     elif data['action'] == 'sell_stop' and prev_price != 0: #deal with pending sell stop
-                        if prev_price >= data["price"] and curr_price <= data["price"]:
+                        if prev_price >= entry_price and curr_price <= entry_price:
                             self.trade(data['symbol'], "put", data['option'])
                             break
                     
                     elif data['action'] == 'sell_limit' and prev_price != 0: #deal with pending sell limit
-                        if prev_price <= data["price"] and curr_price >= data["price"]:
+                        if prev_price <= entry_price and curr_price >= entry_price:
                             self.trade(data['symbol'], "put", data['option'])
                             break
 
             prev_price = curr_price 
     
     def process_symbol(self,symbol):
-        """Place a trade based on RSI rules"""      
+        """Place a trade based on RSI rules"""
+        try:   
                 
-        maxdict = 280
-        print(
-            f"|+|====================RSI Strategy started on {symbol}==================|+|")
+            maxdict = 280
+            timeframe = config("TIMEFRAME")
+            overbought_threshold = float(config("OVERBOUGHT"))
+            oversold_threshold = float(config("OVERSOLD"))
+            option_value = config("OPTION")
+            print(
+                f"|+|====================RSI Strategy started on {symbol}==================|+|")
 
-        self.API.start_candles_stream(symbol, int(config("TIMEFRAME")), maxdict)
-        prev_rsi = 0
-        while True:
+            self.API.start_candles_stream(symbol, int(timeframe), maxdict)
+            prev_rsi = 0
+            while True:
 
-            try:
-                rsi_values = RSI(self.getClosePrices(symbol), timeperiod=14)
-                last_rsi_value = rsi_values[-1]  # Get the last RSI value  # Get the last RSI value
+                try:
+                    rsi_values = RSI(self.getClosePrices(symbol), timeperiod=14)
+                    last_rsi_value = rsi_values[-1]  # Get the last RSI value  # Get the last RSI value
 
-            except KeyError:
-                pass
+                except KeyError:
+                    pass
 
-            else:
-                if prev_rsi != round(last_rsi_value, 2): 
-                    print(f"SYMBOL : {symbol} | RSI :  {round(last_rsi_value, 2)}")
+                else:
+                    if prev_rsi != round(last_rsi_value, 2): 
+                        print(f"SYMBOL : {symbol} | RSI :  {round(last_rsi_value, 2)}")
 
-                # RSI Check
-                if last_rsi_value >= float(config("OVERBOUGHT")):
-                    self.trade(symbol, "put", config("OPTION"))
+                    # RSI Check                
+                    if last_rsi_value >= overbought_threshold:
+                        self.trade(symbol, "put", option_value)
 
-                elif last_rsi_value <= float(config("OVERSOLD")):
-                    self.trade(symbol, "call", config("OPTION"))
+                    elif last_rsi_value <= oversold_threshold:
+                        self.trade(symbol, "call", option_value)
 
-                prev_rsi = round(last_rsi_value, 2)
+                    prev_rsi = round(last_rsi_value, 2)
+        except Exception as e:
+                    print(f"Error in process_symbol : {e}")
                             
-    def run_automated_bot(self):
-        symbols = [asset['name'] for asset in self.robot_connection["robot"]["symbols"] if asset['active']]
-        for symbol in symbols:
-            self.process_symbol(symbol) 
+    def run_automated_bot(self,symbol):  
+            self.process_symbol(symbol['name']) 
 
         
 
