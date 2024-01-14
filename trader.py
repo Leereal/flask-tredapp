@@ -7,7 +7,7 @@ import bson.json_util as json_util
 from decouple import config
 import numpy
 from datetime import datetime
-from talib.abstract import *
+# from talib.abstract import *
 class Trader:
     def __init__(self, email, password,risk_management, account_type="PRACTICE"):
         self.email = email
@@ -302,7 +302,7 @@ class Trader:
                         }
                     }
                 )
-
+                print("Balnce: ",balance)
                 #Tell the client that bot started
                 socket.emit('bot',{
                     "action":'bot_started',
@@ -479,41 +479,41 @@ class Trader:
     
     def process_symbol(self,symbol):
         """Place a trade based on RSI rules"""
-        try:   
+        # try:   
                 
-            maxdict = 280
-            timeframe = config("TIMEFRAME")
-            overbought_threshold = float(config("OVERBOUGHT"))
-            oversold_threshold = float(config("OVERSOLD"))
-            option_value = config("OPTION")
-            print(
-                f"|+|====================RSI Strategy started on {symbol}==================|+|")
+        #     maxdict = 280
+        #     timeframe = config("TIMEFRAME")
+        #     overbought_threshold = float(config("OVERBOUGHT"))
+        #     oversold_threshold = float(config("OVERSOLD"))
+        #     option_value = config("OPTION")
+        #     print(
+        #         f"|+|====================RSI Strategy started on {symbol}==================|+|")
 
-            self.API.start_candles_stream(symbol, int(timeframe), maxdict)
-            prev_rsi = 0
-            while True:
+        #     self.API.start_candles_stream(symbol, int(timeframe), maxdict)
+        #     prev_rsi = 0
+        #     while True:
 
-                try:
-                    rsi_values = RSI(self.getClosePrices(symbol), timeperiod=14)
-                    last_rsi_value = rsi_values[-1]  # Get the last RSI value  # Get the last RSI value
+        #         try:
+        #             rsi_values = RSI(self.getClosePrices(symbol), timeperiod=14)
+        #             last_rsi_value = rsi_values[-1]  # Get the last RSI value  # Get the last RSI value
 
-                except KeyError:
-                    pass
+        #         except KeyError:
+        #             pass
 
-                else:
-                    if prev_rsi != round(last_rsi_value, 2): 
-                        print(f"SYMBOL : {symbol} | RSI :  {round(last_rsi_value, 2)}")
+        #         else:
+        #             if prev_rsi != round(last_rsi_value, 2): 
+        #                 print(f"SYMBOL : {symbol} | RSI :  {round(last_rsi_value, 2)}")
 
-                    # RSI Check                
-                    if last_rsi_value >= overbought_threshold:
-                        self.trade(symbol, "put", option_value)
+        #             # RSI Check                
+        #             if last_rsi_value >= overbought_threshold:
+        #                 self.trade(symbol, "put", option_value)
 
-                    elif last_rsi_value <= oversold_threshold:
-                        self.trade(symbol, "call", option_value)
+        #             elif last_rsi_value <= oversold_threshold:
+        #                 self.trade(symbol, "call", option_value)
 
-                    prev_rsi = round(last_rsi_value, 2)
-        except Exception as e:
-                    print(f"Error in process_symbol : {e}")
+        #             prev_rsi = round(last_rsi_value, 2)
+        # except Exception as e:
+        #             print(f"Error in process_symbol : {e}")
                             
     def run_automated_bot(self,symbol):  
             self.process_symbol(symbol['name']) 

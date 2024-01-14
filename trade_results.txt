@@ -139,3 +139,6 @@ EURUSD Won Profit is now $0 and loss -$1.41  => Total Profit = $-1.41
 EURUSD Won Profit is now $0 and loss -$4.48  => Total Profit = $-4.48
 EURUSD Won Profit is now $0 and loss -$11.16  => Total Profit = $-11.16
 EURUSD Won Profit is now $0 and loss -$25.7  => Total Profit = $-25.7
+EURUSD Won Profit is now $321.7 and loss $0 => Total Profit = $321.7
+EURUSD Won Profit is now $0 and loss -$360.57  => Total Profit = $-38.87
+EURUSD-OTC Won Profit is now $1021.94 and loss $0 => Total Profit = $1021.94
