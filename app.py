@@ -12,7 +12,7 @@ import asyncio
 
 app = Flask(__name__)   # Flask constructor 
 app.config['SECRET_KEY'] = 'secret!'
-CORS(app) 
+CORS(app, origins=['https://official-tredapp-web.vercel.app']) 
 init_socket(app)
 
 running_traders = [] 
